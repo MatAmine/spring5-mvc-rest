@@ -27,7 +27,7 @@ class CategoryControllerTest {
 
     public static final String JIM = "Jim";
     public static final String BOB = "Bob";
-    public static final String API_URL = "/api/v1/categories/";
+    public static final String API_URL = "/api/v1/categories";
 
     @Mock
     CategoryService categoryService;
@@ -65,7 +65,7 @@ class CategoryControllerTest {
 
         doReturn(category).when(categoryService).findByName(JIM);
 
-        mockMvc.perform(get(API_URL + JIM)
+        mockMvc.perform(get(API_URL + "/" + JIM)
         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", equalTo(JIM)))

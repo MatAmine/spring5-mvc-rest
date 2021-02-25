@@ -33,7 +33,6 @@ class CategoryServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-//        MockitoAnnotations.initMocks(this);
 
         categoryService = new CategoryServiceImpl( categoryRepository, CategoryMapper.INSTANCE);
     }

@@ -1,20 +1,24 @@
 package guru.springframework.services;
 
-import guru.springframework.api.v1.mapper.CategoryMapper;
 import guru.springframework.api.v1.mapper.CustomerMapper;
 import guru.springframework.api.v1.model.CustomerDTO;
 import guru.springframework.domain.Customer;
 import guru.springframework.repositories.CustomerRepository;
+import guru.springframework.utils.CustomerGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static guru.springframework.utils.CustomerGenerator.getOneCustomer;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,29 +38,17 @@ class CustomerServiceImplTest {
 
     CustomerService customerService;
 
+    Customer customer;
+
     @BeforeEach
     void setUp() {
         customerService = new CustomerServiceImpl( customerRepository, CustomerMapper.INSTANCE);
+        customer = getOneCustomer();
     }
 
     @Test
     void findAll() {
-        Customer customer1 = new Customer();
-        Customer customer2 = new Customer();
-        Customer customer3 = new Customer();
-
-        customer1.setId(1L);
-        customer1.setFirstname(MICHAEL);
-        customer1.setLastname(JOHN);
-
-        customer2.setId(2L);
-        customer2.setFirstname(JOSH);
-        customer2.setLastname(FERREIRA);
-
-        customer3.setId(3L);
-        customer3.setFirstname(TIM);
-        customer3.setLastname(BURTON);
-        doReturn(List.of(customer1, customer2, customer3)).when(customerRepository).findAll();
+        doReturn(CustomerGenerator.getCustomerList()).when(customerRepository).findAll();
 
         List<CustomerDTO> resultList = customerService.findAll();
 
@@ -64,8 +56,36 @@ class CustomerServiceImplTest {
         assertEquals(JOHN, resultList.get(0).getLastname());
         assertEquals(URL + "/" + 2, resultList.get(1).getCustomerUrl());
         assertEquals(TIM, resultList.get(2).getFirstname());
+    }
 
+    @Test
+    void findById() {
+        doReturn(Optional.of(customer)).when(customerRepository).findById(1L);
 
+        CustomerDTO customerDTO = customerService.findById(1L);
+
+        assertEquals(TIM, customerDTO.getFirstname());
+        assertEquals(BURTON, customerDTO.getLastname());
+        assertEquals(URL + "/" + 1, customerDTO.getCustomerUrl());
+    }
+
+    @Test
+    void findByLastname() {
+        doReturn(Collections.singletonList(customer)).when(customerRepository).findByLastname(BURTON);
+
+        List<CustomerDTO> customerDTOList = customerService.findByLastname(BURTON);
+        assertThat(customerDTOList, hasSize(1));
+        assertEquals(TIM, customerDTOList.get(0).getFirstname());
+        assertEquals(URL + "/" + 1, customerDTOList.get(0).getCustomerUrl());
+    }
+    @Test
+    void findByFirstname() {
+        doReturn(Collections.singletonList(customer)).when(customerRepository).findByFirstname(TIM);
+
+        List<CustomerDTO> customerDTOList = customerService.findByFirstname(TIM);
+        assertThat(customerDTOList, hasSize(1));
+        assertEquals(TIM, customerDTOList.get(0).getFirstname());
+        assertEquals(URL + "/" + 1, customerDTOList.get(0).getCustomerUrl());
     }
 
 }

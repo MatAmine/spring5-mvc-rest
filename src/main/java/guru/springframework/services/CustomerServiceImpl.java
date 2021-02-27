@@ -26,19 +26,29 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDTO> findByFirstname(String firstname) {
-        return customerMapper.entityListToDTOList(customerRepository.findByFirstname(firstname));
+        return returnListOrNotFoundIfEmpty(customerRepository.findByFirstnameIgnoreCase(firstname));
     }
 
     @Override
     public List<CustomerDTO> findByLastname(String lastname) {
-        return customerMapper.entityListToDTOList(customerRepository.findByLastname(lastname));
+        return returnListOrNotFoundIfEmpty(customerRepository.findByLastnameIgnoreCase(lastname));
+
+    }
+
+    private List<CustomerDTO> returnListOrNotFoundIfEmpty(List<Customer> customerList) {
+        if(!customerList.isEmpty()) {
+            return customerMapper.entityListToDTOList(customerList);
+        }
+        else {
+            throw new ResourceNotFoundException();
+        }
     }
 
     @Override
     public CustomerDTO findById(Long id) {
         return customerRepository.findById(id)
                 .map(customerMapper::entityToDTO)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(ResourceNotFoundException::new);
     }
 
     @Override
@@ -66,7 +76,12 @@ public class CustomerServiceImpl implements CustomerService {
             }
             return customerMapper.entityToDTO(customerRepository.save(customer));
         })
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(ResourceNotFoundException::new);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        customerRepository.deleteById(id);
     }
 
 

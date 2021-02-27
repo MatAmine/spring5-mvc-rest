@@ -5,10 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    List<Customer> findByLastname(String lastname);
-    List<Customer> findByFirstname(String lastname);
+    List<Customer> findByLastnameIgnoreCase(String lastname);
+    List<Customer> findByFirstnameIgnoreCase(String lastname);
 }

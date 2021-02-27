@@ -10,6 +10,8 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
+import static guru.springframework.controllers.v1.CustomerController.BASE_URL;
+
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface CustomerMapper {
 
@@ -23,6 +25,6 @@ public interface CustomerMapper {
 
     @AfterMapping
     default void addCustomerUrl(Customer customer, @MappingTarget CustomerDTO customerDTO) {
-        customerDTO.setCustomerUrl("/api/v1/customers/" + customer.getId());
+        customerDTO.setCustomerUrl(BASE_URL + "/" + customer.getId());
     }
 }

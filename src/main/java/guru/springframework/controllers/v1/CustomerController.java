@@ -8,9 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/customers")
+@RequestMapping(CustomerController.BASE_URL)
 public class CustomerController {
 
+    public static final String BASE_URL = "/api/v1/customers";
     private final CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
@@ -27,13 +28,13 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.findById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/firstname")
-    public ResponseEntity<CustomerListDTO> findByFirstname(@RequestParam String firstname) {
+    @GetMapping("/firstname/{firstname}")
+    public ResponseEntity<CustomerListDTO> findByFirstname(@PathVariable String firstname) {
         return new ResponseEntity<>(new CustomerListDTO(customerService.findByFirstname(firstname)), HttpStatus.OK);
     }
 
-    @GetMapping("/lastname")
-    public ResponseEntity<CustomerListDTO> findByLastname(@RequestParam String lastname) {
+    @GetMapping("/lastname/{lastname}")
+    public ResponseEntity<CustomerListDTO> findByLastname(@PathVariable String lastname) {
         return new ResponseEntity<>(new CustomerListDTO(customerService.findByLastname(lastname)), HttpStatus.OK);
     }
 
@@ -45,5 +46,16 @@ public class CustomerController {
     @PutMapping("/update/{id}")
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long id, @RequestBody CustomerDTO customerDTO) {
         return new ResponseEntity<>(customerService.updateCustomer(id, customerDTO), HttpStatus.OK);
+    }
+
+    @PatchMapping("/patch/{id}")
+    public ResponseEntity<CustomerDTO> patchCustomer(@PathVariable Long id, @RequestBody CustomerDTO customerDTO) {
+        return new ResponseEntity<>(customerService.patchCustomer(id, customerDTO), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+        customerService.deleteById(id);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 }

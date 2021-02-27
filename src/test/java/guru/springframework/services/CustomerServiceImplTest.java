@@ -73,7 +73,7 @@ class CustomerServiceImplTest {
 
     @Test
     void findByLastname() {
-        doReturn(Collections.singletonList(customer)).when(customerRepository).findByLastname(BURTON);
+        doReturn(Collections.singletonList(customer)).when(customerRepository).findByLastnameIgnoreCase(BURTON);
 
         List<CustomerDTO> customerDTOList = customerService.findByLastname(BURTON);
         assertThat(customerDTOList, hasSize(1));
@@ -82,7 +82,7 @@ class CustomerServiceImplTest {
     }
     @Test
     void findByFirstname() {
-        doReturn(Collections.singletonList(customer)).when(customerRepository).findByFirstname(TIM);
+        doReturn(Collections.singletonList(customer)).when(customerRepository).findByFirstnameIgnoreCase(TIM);
 
         List<CustomerDTO> customerDTOList = customerService.findByFirstname(TIM);
         assertThat(customerDTOList, hasSize(1));
@@ -121,5 +121,12 @@ class CustomerServiceImplTest {
         assertEquals(FERREIRA, savedCustomer.getLastname());
         assertEquals(API_URL + "/5", result.getCustomerUrl());
         assertEquals(FERREIRA, result.getLastname());
+    }
+
+    @Test
+    void deleteById() {
+        final Long id = 1L;
+        customerService.deleteById(id);
+        verify(customerRepository, times(1)).deleteById(id);
     }
 }

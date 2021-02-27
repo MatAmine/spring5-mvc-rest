@@ -3,6 +3,7 @@ package guru.springframework.controllers.v1;
 import guru.springframework.api.v1.model.CustomerDTO;
 import guru.springframework.domain.Customer;
 import guru.springframework.services.CustomerService;
+import guru.springframework.services.ResourceNotFoundException;
 import guru.springframework.utils.CustomerGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,8 @@ import static guru.springframework.utils.CustomerGenerator.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,7 +43,10 @@ class CustomerControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(customerController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(customerController)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
         customerDTO = getOneCustomerDTO();
     }
 
@@ -72,7 +77,7 @@ class CustomerControllerTest {
     void findByLastname() throws Exception {
         doReturn(List.of(getOneCustomerDTO())).when(customerService).findByLastname(BURTON);
 
-        mockMvc.perform(get(API_URL + "/lastname").param("lastname", BURTON)
+        mockMvc.perform(get(API_URL + "/lastname/" + BURTON)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customers", hasSize(1)))
@@ -83,7 +88,7 @@ class CustomerControllerTest {
     void findByFirstname() throws Exception {
         doReturn(List.of(getOneCustomerDTO())).when(customerService).findByFirstname(TIM);
 
-        mockMvc.perform(get(API_URL + "/firstname").param("firstname", TIM)
+        mockMvc.perform(get(API_URL + "/firstname/" + TIM)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customers", hasSize(1)))
@@ -119,12 +124,44 @@ class CustomerControllerTest {
         doReturn(customerDTOResult).when(customerService).updateCustomer(1L, customerDTOParameter);
 
         mockMvc.perform(put(API_URL + "/update/1")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(asJsonString(customerDTOParameter)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(customerDTOParameter)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstname", equalTo(customerDTOParameter.getFirstname())))
                 .andExpect(jsonPath("$.lastname", equalTo(customerDTOParameter.getLastname())))
                 .andExpect(jsonPath("$.customer_url", equalTo(API_URL + "/1")));
     }
 
+    @Test
+    void patchCustomer() throws Exception {
+        CustomerDTO customerDTOParameter = new CustomerDTO();
+        customerDTOParameter.setFirstname("UPDATED FIRSTNAME");
+
+        CustomerDTO customerDTOResult = getOneCustomerDTO();
+        customerDTOResult.setFirstname("UPDATED FIRSTNAME");
+
+        doReturn(customerDTOResult).when(customerService).patchCustomer(1L, customerDTOParameter);
+
+        mockMvc.perform(patch(API_URL + "/patch/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(customerDTOParameter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", equalTo(customerDTOParameter.getFirstname())))
+                .andExpect(jsonPath("$.lastname", equalTo(customerDTOResult.getLastname())))
+                .andExpect(jsonPath("$.customer_url", equalTo(API_URL + "/1")));
+    }
+
+    @Test
+    void deleteById() throws Exception {
+        mockMvc.perform(delete(API_URL + "/delete/1")).andExpect(status().isOk());
+    }
+
+    @Test
+    void findByLastnameNotFound() throws Exception {
+        doThrow(ResourceNotFoundException.class).when(customerService).findByLastname(anyString());
+
+        mockMvc.perform(get(API_URL + "/lastname/foo")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
 }

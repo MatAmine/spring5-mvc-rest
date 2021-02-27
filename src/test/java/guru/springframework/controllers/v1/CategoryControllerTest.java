@@ -2,6 +2,7 @@ package guru.springframework.controllers.v1;
 
 import guru.springframework.api.v1.model.CategoryDTO;
 import guru.springframework.services.CategoryService;
+import guru.springframework.services.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,10 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,7 +43,10 @@ class CategoryControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(categoryController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(categoryController)
+                .setControllerAdvice(new RestResponseEntityExceptionHandler())
+                .build();
     }
 
     @Test
@@ -51,12 +58,12 @@ class CategoryControllerTest {
 
         doReturn(categories).when(categoryService).findAll();
 
-    mockMvc.perform(get(API_URL)
-        .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.categories", hasSize(2)))
-            .andExpect(jsonPath("$.categories[0].name", equalTo(JIM)))
-            .andExpect(jsonPath("$.categories[1].id", equalTo(2)));
+        mockMvc.perform(get(API_URL)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.categories", hasSize(2)))
+                .andExpect(jsonPath("$.categories[0].name", equalTo(JIM)))
+                .andExpect(jsonPath("$.categories[1].id", equalTo(2)));
     }
 
     @Test
@@ -66,10 +73,19 @@ class CategoryControllerTest {
         doReturn(category).when(categoryService).findByName(JIM);
 
         mockMvc.perform(get(API_URL + "/" + JIM)
-        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", equalTo(JIM)))
                 .andExpect(jsonPath("$.id", equalTo(1)));
+    }
+
+    @Test
+    void findByNameNotFound() throws Exception {
+        doThrow(ResourceNotFoundException.class).when(categoryService).findByName(anyString());
+
+        mockMvc.perform(get(API_URL + "/foo")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 
 }

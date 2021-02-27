@@ -16,8 +16,10 @@ public interface CustomerMapper {
     CustomerMapper INSTANCE = Mappers.getMapper(CustomerMapper.class);
 
     CustomerDTO entityToDTO(Customer customer);
-
     List<CustomerDTO> entityListToDTOList(List<Customer> customerList);
+
+    Customer DTOtoEntity(CustomerDTO customerDTO);
+    List<Customer> DTOListToEntityList(List<CustomerDTO> customerDTOList);
 
     @AfterMapping
     default void addCustomerUrl(Customer customer, @MappingTarget CustomerDTO customerDTO) {

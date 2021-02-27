@@ -37,8 +37,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO findById(Long id) {
-        Optional<Customer> optionalCustomer = customerRepository.findById(id);
+        return customerRepository.findById(id)
+                .map(customerMapper::entityToDTO)
+                .orElseThrow(RuntimeException::new);
+    }
 
-        return optionalCustomer.isPresent() ? customerMapper.entityToDTO(optionalCustomer.get()) : new CustomerDTO();
+    @Override
+    public CustomerDTO createNewCustomer(CustomerDTO customerDTO) {
+        Customer savedCustomer = customerRepository.save(customerMapper.DTOtoEntity(customerDTO));
+        return customerMapper.entityToDTO(savedCustomer);
     }
 }

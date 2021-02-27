@@ -1,6 +1,7 @@
 package guru.springframework.controllers.v1;
 
 import guru.springframework.api.v1.model.CustomerDTO;
+import guru.springframework.domain.Customer;
 import guru.springframework.services.CustomerService;
 import guru.springframework.utils.CustomerGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,12 +16,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static guru.springframework.controllers.v1.AbstractRestControllerTest.asJsonString;
 import static guru.springframework.utils.CustomerGenerator.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,7 +50,7 @@ class CustomerControllerTest {
     void findAll() throws Exception {
 
 
-        doReturn(CustomerGenerator.getCustomerList()).when(customerService).findAll();
+        doReturn(CustomerGenerator.getCustomerDTOList()).when(customerService).findAll();
 
         mockMvc.perform(get(API_URL)
                 .contentType(MediaType.APPLICATION_JSON))
@@ -76,6 +79,7 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.customers", hasSize(1)))
                 .andExpect(jsonPath("$.customers[0].firstname", equalTo(TIM)));
     }
+
     @Test
     void findByFirstname() throws Exception {
         doReturn(List.of(getOneCustomerDTO())).when(customerService).findByFirstname(TIM);
@@ -85,6 +89,25 @@ class CustomerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customers", hasSize(1)))
                 .andExpect(jsonPath("$.customers[0].lastname", equalTo(BURTON)));
+    }
+
+    @Test
+    void createNewCustomer() throws Exception {
+        CustomerDTO customerDTOParameter = getOneCustomerDTO();
+        customerDTOParameter.setCustomerUrl(null);
+
+        CustomerDTO customerDTOResult = getOneCustomerDTO();
+
+        doReturn(customerDTOResult).when(customerService).createNewCustomer(customerDTOParameter);
+
+        mockMvc.perform(post(API_URL + "/new")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(customerDTOParameter)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.firstname", equalTo(customerDTOParameter.getFirstname())))
+                .andExpect(jsonPath("$.lastname", equalTo(customerDTOParameter.getLastname())))
+                .andExpect(jsonPath("$.customer_url", equalTo(API_URL + "/1")));
+
     }
 
 }

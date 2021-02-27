@@ -17,7 +17,7 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<CustomerListDTO> findAll(){
         return new ResponseEntity<>(new CustomerListDTO(customerService.findAll()), HttpStatus.OK);
     }
@@ -35,5 +35,10 @@ public class CustomerController {
     @GetMapping("/lastname")
     public ResponseEntity<CustomerListDTO> findByLastname(@RequestParam String lastname) {
         return new ResponseEntity<>(new CustomerListDTO(customerService.findByLastname(lastname)), HttpStatus.OK);
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<CustomerDTO> createNewCustomer(@RequestBody CustomerDTO customerDTO) {
+        return new ResponseEntity<>(customerService.createNewCustomer(customerDTO), HttpStatus.CREATED);
     }
 }

@@ -15,10 +15,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static guru.springframework.utils.CustomerGenerator.getOneCustomer;
+import static guru.springframework.utils.CustomerGenerator.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,6 +87,17 @@ class CustomerServiceImplTest {
         assertThat(customerDTOList, hasSize(1));
         assertEquals(TIM, customerDTOList.get(0).getFirstname());
         assertEquals(URL + "/" + 1, customerDTOList.get(0).getCustomerUrl());
+    }
+
+    @Test
+    void createNewCustomer() {
+        doReturn(customer).when(customerRepository).save(any(Customer.class));
+
+        CustomerDTO result = customerService.createNewCustomer(getOneCustomerDTO());
+
+        assertEquals(API_URL + "/" + customer.getId(), result.getCustomerUrl());
+        assertEquals(result.getLastname(), customer.getLastname());
+        assertEquals(result.getFirstname(), customer.getFirstname());
     }
 
 }

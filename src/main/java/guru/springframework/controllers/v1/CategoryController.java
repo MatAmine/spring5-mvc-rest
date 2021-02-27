@@ -22,12 +22,12 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<CategoryListDTO> findAll() {
-        return new ResponseEntity<>(new CategoryListDTO(categoryService.findAll()), HttpStatus.OK);
+    public CategoryListDTO findAll() {
+        return new CategoryListDTO(categoryService.findAll());
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<CategoryDTO> findByName(@PathVariable String name) {
-        return new ResponseEntity<>(categoryService.findByName(name), HttpStatus.OK);
+    public CategoryDTO findByName(@PathVariable String name) {
+        return categoryService.findByName(name);
     }
 }

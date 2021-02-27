@@ -8,6 +8,7 @@ import guru.springframework.utils.CustomerGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -20,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceImplTest {
@@ -100,4 +101,25 @@ class CustomerServiceImplTest {
         assertEquals(result.getFirstname(), customer.getFirstname());
     }
 
+    @Test
+    void updateCustomer() {
+        customer.setLastname(FERREIRA);
+        customer.setId(5L);
+        CustomerDTO customerDTOParameter = getOneCustomerDTO();
+
+        customerDTOParameter.setLastname(FERREIRA);
+        customerDTOParameter.setCustomerUrl(null);
+
+        doReturn(customer).when(customerRepository).save(customer);
+        ArgumentCaptor<Customer> argumentCaptor = ArgumentCaptor.forClass(Customer.class);
+
+        CustomerDTO result = customerService.updateCustomer(5L, customerDTOParameter);
+
+        verify(customerRepository, times(1)).save(argumentCaptor.capture());
+        Customer savedCustomer = argumentCaptor.getValue();
+        assertEquals(5L, savedCustomer.getId());
+        assertEquals(FERREIRA, savedCustomer.getLastname());
+        assertEquals(API_URL + "/5", result.getCustomerUrl());
+        assertEquals(FERREIRA, result.getLastname());
+    }
 }

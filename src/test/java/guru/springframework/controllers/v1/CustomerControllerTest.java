@@ -22,8 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -108,6 +107,24 @@ class CustomerControllerTest {
                 .andExpect(jsonPath("$.lastname", equalTo(customerDTOParameter.getLastname())))
                 .andExpect(jsonPath("$.customer_url", equalTo(API_URL + "/1")));
 
+    }
+
+    @Test
+    void updateCustomer() throws Exception {
+        CustomerDTO customerDTOParameter = getOneCustomerDTO();
+        customerDTOParameter.setCustomerUrl(null);
+
+        CustomerDTO customerDTOResult = getOneCustomerDTO();
+
+        doReturn(customerDTOResult).when(customerService).updateCustomer(1L, customerDTOParameter);
+
+        mockMvc.perform(put(API_URL + "/update/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(customerDTOParameter)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", equalTo(customerDTOParameter.getFirstname())))
+                .andExpect(jsonPath("$.lastname", equalTo(customerDTOParameter.getLastname())))
+                .andExpect(jsonPath("$.customer_url", equalTo(API_URL + "/1")));
     }
 
 }

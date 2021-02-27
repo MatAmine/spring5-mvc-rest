@@ -7,7 +7,6 @@ import guru.springframework.repositories.CustomerRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -44,7 +43,20 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO createNewCustomer(CustomerDTO customerDTO) {
-        Customer savedCustomer = customerRepository.save(customerMapper.DTOtoEntity(customerDTO));
+        return saveAndReturnDTO(customerMapper.DTOtoEntity(customerDTO));
+    }
+
+    @Override
+    public CustomerDTO updateCustomer(long id, CustomerDTO customerDTO) {
+        Customer customer = customerMapper.DTOtoEntity(customerDTO);
+        customer.setId(id);
+
+        return saveAndReturnDTO(customer);
+
+    }
+    private CustomerDTO saveAndReturnDTO(Customer customer) {
+        Customer savedCustomer = customerRepository.save(customer);
         return customerMapper.entityToDTO(savedCustomer);
     }
+
 }

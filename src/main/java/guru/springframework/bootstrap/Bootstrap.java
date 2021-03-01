@@ -2,33 +2,53 @@ package guru.springframework.bootstrap;
 
 import guru.springframework.domain.Category;
 import guru.springframework.domain.Customer;
+import guru.springframework.domain.Vendor;
 import guru.springframework.repositories.CategoryRepository;
 import guru.springframework.repositories.CustomerRepository;
+import guru.springframework.repositories.VendorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
 public class Bootstrap implements CommandLineRunner {
 
-    private CategoryRepository categoryRepository;
-    private CustomerRepository customerRepository;
+    private final CategoryRepository categoryRepository;
+    private final CustomerRepository customerRepository;
+    private final VendorRepository vendorRepository;
 
-
-    public Bootstrap(CategoryRepository categoryRepository, CustomerRepository customerRepository) {
+    public Bootstrap(CategoryRepository categoryRepository, CustomerRepository customerRepository, VendorRepository vendorRepository) {
         this.categoryRepository = categoryRepository;
         this.customerRepository = customerRepository;
+        this.vendorRepository = vendorRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
         loadCategories();
         loadCustomers();
+        loadVendors();
 
         log.info("Categories Loaded = {}", categoryRepository.count());
         log.info("Customers Loaded = {}", customerRepository.count());
+        log.info("Vendors Loaded = {}", vendorRepository.count());
 
+    }
+
+    private void loadVendors() {
+        Vendor vendor = new Vendor();
+        vendor.setName("Fnac");
+
+        Vendor vendor2 = new Vendor();
+        vendor2.setName("Boulanger");
+
+        Vendor vendor3 = new Vendor();
+        vendor3.setName("Darty");
+
+        vendorRepository.saveAll(List.of(vendor, vendor2,vendor3));
     }
 
     private void loadCustomers() {
